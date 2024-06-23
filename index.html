@@ -1,85 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/x-icon" href="Whackit.jpeg">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Circle Frenzy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whackit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #4E54C8;
-            --secondary-color: #8F94FB;
-            --background-color: #1A1A2E;
-            --surface-color: #16213E;
+            --primary-color: #6C63FF;
+            --secondary-color: #4CAF50;
+            --background-color: #121212;
+            --surface-color: #1E1E1E;
             --on-surface-color: #E0E0E0;
-            --accent-color: #FF6B6B;
+            --accent-color: #FF4081;
         }
         body, html {
             margin: 0;
             padding: 0;
-            font-family: 'Nunito', sans-serif;
+            font-family: 'Roboto', sans-serif;
             background-color: var(--background-color);
             color: var(--on-surface-color);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
         .game-container {
             background-color: var(--surface-color);
             border-radius: 20px;
-            padding: 1rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            width: 100%;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             max-width: 500px;
-            margin: 10px;
+            width: 100%;
         }
         h1 {
-            color: var(--secondary-color);
+            color: var(--primary-color);
             text-align: center;
-            margin-bottom: 0.5rem;
-            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         .info-panel {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.5rem;
-            background-color: rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+            background-color: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            padding: 0.5rem;
+            padding: 0.5rem 1rem;
         }
         .info-item {
             text-align: center;
         }
         .info-label {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             opacity: 0.7;
         }
         .info-value {
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--primary-color);
         }
         .game-board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 10px;
+            gap: 15px;
+            margin-top: 20px;
         }
         .circle-container {
             aspect-ratio: 1;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             display: flex;
             justify-content: center;
             align-items: center;
+            cursor: pointer;
             overflow: hidden;
-            touch-action: manipulation;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .circle-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(108, 99, 255, 0.5);
         }
         .circle {
             width: 80%;
@@ -103,12 +104,12 @@
         button {
             display: block;
             width: 100%;
-            padding: 0.8rem;
-            margin-top: 1rem;
-            font-size: 1rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: white;
-            background-color: var(--primary-color);
+            background-color: var(--secondary-color);
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -116,27 +117,47 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
         button:active {
-            transform: scale(0.98);
+            transform: translateY(0);
+            box-shadow: none;
         }
         .combo-meter {
             height: 5px;
-            background-color: rgba(255, 255, 255, 0.2);
-            margin-top: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-top: 1rem;
             border-radius: 5px;
             overflow: hidden;
         }
         .combo-fill {
             height: 100%;
             width: 0%;
-            background-color: var(--secondary-color);
+            background-color: var(--primary-color);
             transition: width 0.3s ease;
+        }
+        .powerup {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: gold;
+            display: none;
+            animation: float 2s infinite ease-in-out;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <h1>Circle Frenzy</h1>
+        <h1>Whackit</h1>
+        <h2>A game made by Vqesh for a demo, for more information, visit vqesh.com</h2>
         <div class="info-panel">
             <div class="info-item">
                 <div class="info-label">Score</div>
@@ -155,18 +176,19 @@
             <div class="combo-fill"></div>
         </div>
         <div class="game-board">
-            <div class="circle-container"><div class="circle"></div></div>
-            <div class="circle-container"><div class="circle"></div></div>
-            <div class="circle-container"><div class="circle"></div></div>
-            <div class="circle-container"><div class="circle"></div></div>
-            <div class="circle-container"><div class="circle"></div></div>
-            <div class="circle-container"><div class="circle"></div></div>
-            <div class="circle-container"><div class="circle"></div></div>
-            <div class="circle-container"><div class="circle"></div></div>
-            <div class="circle-container"><div class="circle"></div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
         </div>
-        <button id="startButton">Start Game</button>
+        <button onclick="startGame()">Start Game</button>
     </div>
+    <div class="powerup" onclick="collectPowerup(this)"></div>
 
     <script>
         let score = 0;
@@ -176,33 +198,20 @@
         let currentCircle = null;
         let combo = 1;
         let comboTimeout;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const circles = document.querySelectorAll('.circle');
-            circles.forEach(circle => {
-                circle.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    hitCircle(circle);
-                });
-                circle.addEventListener('mousedown', () => hitCircle(circle));
-            });
-
-            document.getElementById('startButton').addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                startGame();
-            });
-            document.getElementById('startButton').addEventListener('mousedown', startGame);
-        });
+        let difficulty = 1000;
+        let powerupInterval;
 
         function startGame() {
             score = 0;
             timeLeft = 30;
             combo = 1;
+            difficulty = 1000;
             updateUI();
-            document.getElementById('startButton').disabled = true;
+            document.querySelector('button').disabled = true;
 
-            gameInterval = setInterval(showRandomCircle, 1000);
+            gameInterval = setInterval(showRandomCircle, difficulty);
             countdown = setInterval(updateTime, 1000);
+            powerupInterval = setInterval(spawnPowerup, 5000);
         }
 
         function showRandomCircle() {
@@ -220,7 +229,7 @@
                     currentCircle.classList.remove('active');
                     resetCombo();
                 }
-            }, 850);
+            }, difficulty - 150);
         }
 
         function hitCircle(circle) {
@@ -231,6 +240,7 @@
                 circle.classList.remove('active');
                 circle.classList.add('pop');
                 setTimeout(() => circle.classList.remove('pop'), 300);
+                increaseDifficulty();
             } else {
                 resetCombo();
             }
@@ -272,11 +282,40 @@
         function endGame() {
             clearInterval(gameInterval);
             clearInterval(countdown);
+            clearInterval(powerupInterval);
             if (currentCircle) {
                 currentCircle.classList.remove('active');
             }
-            document.getElementById('startButton').disabled = false;
+            document.querySelector('button').disabled = false;
             alert(`Game over! Your score: ${score}`);
+        }
+
+        function increaseDifficulty() {
+            if (difficulty > 400) {
+                difficulty -= 10;
+                clearInterval(gameInterval);
+                gameInterval = setInterval(showRandomCircle, difficulty);
+            }
+        }
+
+        function spawnPowerup() {
+            const powerup = document.querySelector('.powerup');
+            const gameBoard = document.querySelector('.game-board');
+            const rect = gameBoard.getBoundingClientRect();
+
+            powerup.style.left = `${rect.left + Math.random() * rect.width}px`;
+            powerup.style.top = `${rect.top + Math.random() * rect.height}px`;
+            powerup.style.display = 'block';
+
+            setTimeout(() => {
+                powerup.style.display = 'none';
+            }, 3000);
+        }
+
+        function collectPowerup(powerup) {
+            powerup.style.display = 'none';
+            timeLeft += 5;
+            updateUI();
         }
     </script>
 </body>
