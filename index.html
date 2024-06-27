@@ -47,6 +47,7 @@
             max-width: 500px;
             width: 100%;
             z-index: 10;
+            position: relative;
         }
         h1 {
             color: var(--primary-color);
@@ -182,6 +183,92 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
+        
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: particleAnimation 0.5s ease-out forwards;
+        }
+        @keyframes particleAnimation {
+            0% { transform: translateY(0) translateX(0); opacity: 1; }
+            100% { transform: translateY(-50px) translateX(var(--x-end)); opacity: 0; }
+        }
+        
+        .level-indicator {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .high-score {
+            text-align: center;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: var(--surface-color);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 80%;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .modal p {
+            margin-bottom: 1rem;
+        }
+
+        .modal button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .powerup-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: gold;
+            color: var(--on-surface-color);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -206,6 +293,8 @@
         <div class="combo-meter">
             <div class="combo-fill"></div>
         </div>
+        <div class="level-indicator">Level: <span id="level">1</span></div>
+        <div class="high-score">High Score: <span id="highScore">0</span></div>
         <div class="game-board">
             <div class="circle-container"><div class="circle" onclick="hitCircle(this)">uwu</div></div>
             <div class="circle-container"><div class="circle" onclick="hitCircle(this)">^_^</div></div>
@@ -218,9 +307,21 @@
             <div class="circle-container"><div class="circle" onclick="hitCircle(this)">:)</div></div>
         </div>
         <button onclick="startGame()">Start Game</button>
+        <div class="powerup-indicator">Powerup Active!</div>
     </div>
-    <div class="powerup" onclick="collectPowerup(this)">🍭</div>
-    <audio id="boop-sound" src="bow.mp3"></audio>
+    <div class="powerup" onclick="collectPowerup(this)">⚡</div>
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2>Game Over</h2>
+            <p>Your score: <span id="finalScore"></span></p>
+            <p id="highScoreMessage"></p>
+            <button onclick="closeModal()">Play Again</button>
+        </div>
+    </div>
+    <audio id="boop-sound" src="soft_tap.mp3"></audio>
+    <audio id="level-up-sound" src="level_up.mp3"></audio>
+    <audio id="game-over-sound" src="game_over.mp3"></audio>
+    <audio id="powerup-sound" src="powerup.mp3"></audio>
 
     <script>
         let score = 0;
@@ -232,6 +333,10 @@
         let comboTimeout;
         let difficulty = 1000;
         let powerupInterval;
+        let level = 1;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let powerupActive = false;
+        let powerupDuration = 5000; // 5 seconds
 
         function createBubbles() {
             const bubbleCount = 20;
@@ -261,6 +366,8 @@
             timeLeft = 30;
             combo = 1;
             difficulty = 1000;
+            level = 1;
+            powerupActive = false;
             updateUI();
             document.querySelector('button').disabled = true;
 
@@ -289,13 +396,19 @@
 
         function hitCircle(circle) {
             if (circle.classList.contains('active')) {
-                score += combo;
-                updateCombo();
-                updateUI();
+                let points = combo;
+                if (powerupActive) {
+                    points *= 2;
+                }
+                score += points;
+                updateCombo();updateUI();
                 circle.classList.remove('active');
                 circle.classList.add('pop');
                 setTimeout(() => circle.classList.remove('pop'), 300);
                 increaseDifficulty();
+                playBoopSound();
+                createParticles(circle);
+                checkLevelUp();
             } else {
                 resetCombo();
             }
@@ -332,6 +445,8 @@
             document.getElementById('score').textContent = score;
             document.getElementById('time').textContent = timeLeft;
             document.getElementById('combo').textContent = `x${combo}`;
+            document.getElementById('level').textContent = level;
+            document.getElementById('highScore').textContent = highScore;
         }
 
         function endGame() {
@@ -342,7 +457,8 @@
                 currentCircle.classList.remove('active');
             }
             document.querySelector('button').disabled = false;
-            alert(`Game over! Your score: ${score}`);
+            playGameOverSound();
+            showGameOverModal();
         }
 
         function increaseDifficulty() {
@@ -369,30 +485,101 @@
 
         function collectPowerup(powerup) {
             powerup.style.display = 'none';
-            timeLeft += 5;
-            updateUI();
+            activatePowerup();
+            playPowerupSound();
         }
-                function hitCircle(circle) {
-            if (circle.classList.contains('active')) {
-                score += combo;
-                updateCombo();
-                updateUI();
-                circle.classList.remove('active');
-                circle.classList.add('pop');
-                setTimeout(() => circle.classList.remove('pop'), 300);
-                increaseDifficulty();
-                playBoopSound();
-                createParticles(circle);
-            } else {
-                resetCombo();
-            }
+
+        function activatePowerup() {
+            powerupActive = true;
+            document.querySelector('.powerup-indicator').style.display = 'block';
+            setTimeout(() => {
+                powerupActive = false;
+                document.querySelector('.powerup-indicator').style.display = 'none';
+            }, powerupDuration);
         }
-        
+
         function playBoopSound() {
             const sound = document.getElementById('boop-sound');
             sound.currentTime = 0;
             sound.play();
         }
+
+        function playLevelUpSound() {
+            const sound = document.getElementById('level-up-sound');
+            sound.currentTime = 0;
+            sound.play();
+        }
+
+        function playGameOverSound() {
+            const sound = document.getElementById('game-over-sound');
+            sound.currentTime = 0;
+            sound.play();
+        }
+
+        function playPowerupSound() {
+            const sound = document.getElementById('powerup-sound');
+            sound.currentTime = 0;
+            sound.play();
+        }
+
+        function createParticles(circle) {
+            const rect = circle.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.innerHTML = '✨';
+                particle.style.left = `${centerX}px`;
+                particle.style.top = `${centerY}px`;
+                particle.style.setProperty('--x-end', `${(Math.random() - 0.5) * 100}px`);
+                document.body.appendChild(particle);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 500);
+            }
+        }
+
+        function checkLevelUp() {
+            const newLevel = Math.floor(score / 100) + 1;
+            if (newLevel > level) {
+                level = newLevel;
+                playLevelUpSound();
+                difficulty = Math.max(400, 1000 - (level - 1) * 50);
+                clearInterval(gameInterval);
+                gameInterval = setInterval(showRandomCircle, difficulty);
+                updateUI();
+            }
+        }
+
+        function showGameOverModal() {
+            const modal = document.getElementById('gameOverModal');
+            const finalScoreElement = document.getElementById('finalScore');
+            const highScoreMessageElement = document.getElementById('highScoreMessage');
+
+            finalScoreElement.textContent = score;
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('highScore', highScore);
+                highScoreMessageElement.textContent = "New High Score!";
+            } else {
+                highScoreMessageElement.textContent = `High Score: ${highScore}`;
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('gameOverModal');
+            modal.classList.remove('show');
+            startGame();
+        }
+
+        // Initialize high score display
+        document.getElementById('highScore').textContent = highScore;
     </script>
 </body>
 </html>
