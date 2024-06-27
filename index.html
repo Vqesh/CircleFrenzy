@@ -5,47 +5,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Whackit</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6C63FF;
-            --secondary-color: #4CAF50;
-            --background-color: #121212;
-            --surface-color: #1E1E1E;
-            --on-surface-color: #E0E0E0;
-            --accent-color: #FF4081;
+            --primary-color: #B19CD9;
+            --secondary-color: #FF9999;
+            --background-color: #6A5ACD;
+            --surface-color: rgba(255, 218, 185, 0.9);
+            --on-surface-color: #4B0082;
+            --accent-color: #FF69B4;
         }
         body, html {
             margin: 0;
             padding: 0;
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--background-color);
+            font-family: 'Comic Neue', cursive;
             color: var(--on-surface-color);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden;
+            background: linear-gradient(45deg, #6A5ACD, #9370DB);
+        }
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 8s infinite ease-in-out;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-20px) translateX(10px); }
+            50% { transform: translateY(-35px) translateX(-15px); }
+            75% { transform: translateY(-20px) translateX(15px); }
         }
         .game-container {
             background-color: var(--surface-color);
             border-radius: 20px;
             padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             max-width: 500px;
             width: 100%;
+            z-index: 10;
         }
         h1 {
             color: var(--primary-color);
             text-align: center;
             margin-bottom: 1rem;
             font-size: 2.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.3);
         }
         .info-panel {
             display: flex;
             justify-content: space-between;
             margin-bottom: 1rem;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(255, 255, 255, 0.5);
             border-radius: 10px;
             padding: 0.5rem 1rem;
         }
@@ -69,7 +83,7 @@
         }
         .circle-container {
             aspect-ratio: 1;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(255, 255, 255, 0.5);
             border-radius: 15px;
             display: flex;
             justify-content: center;
@@ -80,7 +94,7 @@
         }
         .circle-container:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(108, 99, 255, 0.5);
+            box-shadow: 0 0 15px rgba(177, 156, 217, 0.5);
         }
         .circle {
             width: 80%;
@@ -89,6 +103,10 @@
             background-color: var(--accent-color);
             transform: scale(0);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
         }
         .circle.active {
             transform: scale(1);
@@ -118,9 +136,9 @@
             letter-spacing: 1px;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #FF7777;
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 8px rgba(255, 153, 153, 0.5);
         }
         button:active {
             transform: translateY(0);
@@ -128,7 +146,7 @@
         }
         .combo-meter {
             height: 5px;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.5);
             margin-top: 1rem;
             border-radius: 5px;
             overflow: hidden;
@@ -147,8 +165,20 @@
             background-color: gold;
             display: none;
             animation: float 2s infinite ease-in-out;
+            font-size: 1.5rem;
+            text-align: center;
+            line-height: 30px;
+            z-index: 20;
         }
-        @keyframes float {
+        .logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1rem;
+            display: block;
+            animation: bounce 2s infinite ease-in-out;
+        }
+        
+        @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
@@ -157,7 +187,8 @@
 <body>
     <div class="game-container">
         <h1>Whackit</h1>
-        <h2>This is Whackit; hit as many circles as you can</h2>
+        <img src="Whackit.png" alt="Whackit Logo" class="logo">
+        <h2>Boop as many cute blobs as you can!</h2>
         <div class="info-panel">
             <div class="info-item">
                 <div class="info-label">Score</div>
@@ -176,19 +207,20 @@
             <div class="combo-fill"></div>
         </div>
         <div class="game-board">
-            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
-            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
-            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
-            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
-            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
-            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
-            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
-            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
-            <div class="circle-container"><div class="circle" onclick="hitCircle(this)"></div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)">uwu</div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)">^_^</div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)">:3</div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)">♡</div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)">:D</div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)">:P</div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)">^-^</div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)">;)</div></div>
+            <div class="circle-container"><div class="circle" onclick="hitCircle(this)">:)</div></div>
         </div>
         <button onclick="startGame()">Start Game</button>
     </div>
-    <div class="powerup" onclick="collectPowerup(this)"></div>
+    <div class="powerup" onclick="collectPowerup(this)">🍭</div>
+    <audio id="boop-sound" src="bow.mp3"></audio>
 
     <script>
         let score = 0;
@@ -200,6 +232,29 @@
         let comboTimeout;
         let difficulty = 1000;
         let powerupInterval;
+
+        function createBubbles() {
+            const bubbleCount = 20;
+            const body = document.querySelector('body');
+            
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                
+                const size = Math.random() * 100 + 50;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                
+                bubble.style.left = `${Math.random() * 100}vw`;
+                bubble.style.top = `${Math.random() * 100}vh`;
+                
+                bubble.style.animationDelay = `${Math.random() * 8}s`;
+                
+                body.appendChild(bubble);
+            }
+        }
+
+        createBubbles();
 
         function startGame() {
             score = 0;
@@ -316,6 +371,27 @@
             powerup.style.display = 'none';
             timeLeft += 5;
             updateUI();
+        }
+                function hitCircle(circle) {
+            if (circle.classList.contains('active')) {
+                score += combo;
+                updateCombo();
+                updateUI();
+                circle.classList.remove('active');
+                circle.classList.add('pop');
+                setTimeout(() => circle.classList.remove('pop'), 300);
+                increaseDifficulty();
+                playBoopSound();
+                createParticles(circle);
+            } else {
+                resetCombo();
+            }
+        }
+        
+        function playBoopSound() {
+            const sound = document.getElementById('boop-sound');
+            sound.currentTime = 0;
+            sound.play();
         }
     </script>
 </body>
